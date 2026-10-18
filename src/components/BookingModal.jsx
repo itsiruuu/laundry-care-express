@@ -1,152 +1,251 @@
-export default function BookingModal() {
+import React, { useState, useEffect } from 'react';
+
+export default function BookingModal({ isOpen, initialMode, onClose, onBookingSuccess }) {
+  const [mode, setMode] = useState('pickup'); // 'pickup' | 'login'
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    address: '',
+    zip: '',
+    serviceType: 'wash-fold',
+    pickupDate: '',
+    pickupTime: 'morning',
+    notes: '',
+    promoCode: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  useEffect(() => {
+    if (initialMode === 'login') {
+      setMode('login');
+    } else {
+      setMode('pickup');
+      if (initialMode === 'FIRST20') {
+        setFormData(prev => ({ ...prev, promoCode: 'FIRST20' }));
+      } else if (['wash-fold', 'dry-cleaning', 'commercial', 'airbnb'].includes(initialMode)) {
+        setFormData(prev => ({ ...prev, serviceType: initialMode }));
+      }
+    }
+    // Set default pickup date to tomorrow
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const dateStr = tomorrow.toISOString().split('T')[0];
+    setFormData(prev => ({ ...prev, pickupDate: dateStr }));
+    setIsSubmitted(false);
+  }, [isOpen, initialMode]);
+
+  if (!isOpen) return null;
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setTimeout(() => {
+      setIsSubmitting(false);
+      setIsSubmitted(true);
+      if (onBookingSuccess) {
+        onBookingSuccess(mode === 'login' ? 'Logged in successfully!' : 'Pickup scheduled successfully! We sent confirmation details to your email.');
+      }
+    }, 700);
+  };
+
   return (
-    <div className="modal-backdrop" id="bookingModalBackdrop">
-      <div className="booking-modal" id="bookingModal">
-        <div className="modal-header">
-          <div>
-            <h3 style={{fontSize: '1.35rem', fontFamily: '"Outfit", sans-serif'}}>Schedule Express Pickup</h3>
-            <p style={{fontSize: '0.85rem', color: 'var(--text-muted)'}}>Step-by-step booking in less than 60 seconds</p>
+    <div className="lce-modal-overlay" onClick={onClose}>
+      <div className="lce-modal-container" onClick={(e) => e.stopPropagation()}>
+        <button className="lce-modal-close" onClick={onClose} aria-label="Close modal">
+          &times;
+        </button>
+
+        {isSubmitted ? (
+          <div className="lce-modal-success">
+            <div className="lce-success-icon-wrap">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                <polyline points="22 4 12 14.01 9 11.01" />
+              </svg>
+            </div>
+            <h3>{mode === 'login' ? 'Welcome Back!' : 'Pickup Confirmed!'}</h3>
+            <p>
+              {mode === 'login' 
+                ? 'You have logged in to your Laundry Care Express account.' 
+                : `Thank you, ${formData.name || 'valued customer'}! Our driver will arrive on ${formData.pickupDate} (${formData.pickupTime === 'morning' ? '8:00 AM - 12:00 PM' : '1:00 PM - 5:00 PM'}).`}
+            </p>
+            {formData.promoCode && (
+              <div className="lce-applied-promo-tag">
+                🏷️ Promo code <strong>{formData.promoCode}</strong> applied ($20 OFF)!
+              </div>
+            )}
+            <button className="lce-btn-cyan full-width" onClick={onClose}>
+              Done
+            </button>
           </div>
-          <button className="modal-close-btn" id="btnCloseModal" aria-label="Close Modal">×</button>
-        </div>
-        <div className="modal-body">
-          {/* Wizard Navigation */}
-          <div className="wizard-nav">
-            <div className="wizard-nav-step active" id="wStep1Nav" onClick={() => window.jumpToWizardStep(1)}>
-              <div className="wizard-nav-dot">1</div>
-              <span className="wizard-nav-title">Service</span>
+        ) : mode === 'login' ? (
+          <div className="lce-modal-login-form">
+            <div className="lce-modal-header">
+              <h3>Log In to Your Account</h3>
+              <p>Manage pickups, update preferences, and view order receipts.</p>
             </div>
-            <div className="wizard-nav-step" id="wStep2Nav" onClick={() => window.jumpToWizardStep(2)}>
-              <div className="wizard-nav-dot">2</div>
-              <span className="wizard-nav-title">Schedule</span>
-            </div>
-            <div className="wizard-nav-step" id="wStep3Nav" onClick={() => window.jumpToWizardStep(3)}>
-              <div className="wizard-nav-dot">3</div>
-              <span className="wizard-nav-title">Address</span>
-            </div>
-            <div className="wizard-nav-step" id="wStep4Nav" onClick={() => window.jumpToWizardStep(4)}>
-              <div className="wizard-nav-dot">4</div>
-              <span className="wizard-nav-title">Confirm</span>
-            </div>
+            <form onSubmit={handleSubmit} className="lce-modal-form">
+              <div className="lce-form-group">
+                <label>Email Address</label>
+                <input 
+                  type="email" 
+                  name="email" 
+                  placeholder="name@example.com" 
+                  required 
+                  value={formData.email} 
+                  onChange={handleChange} 
+                />
+              </div>
+              <div className="lce-form-group">
+                <label>Password</label>
+                <input 
+                  type="password" 
+                  name="password" 
+                  placeholder="Enter your password" 
+                  required 
+                />
+              </div>
+              <button type="submit" className="lce-btn-cyan full-width" disabled={isSubmitting}>
+                {isSubmitting ? 'Logging In...' : 'LOG IN'}
+              </button>
+              <div className="lce-modal-switch">
+                <span>New customer? </span>
+                <button type="button" className="link-btn" onClick={() => setMode('pickup')}>
+                  Schedule a Pickup
+                </button>
+              </div>
+            </form>
           </div>
-          {/* Wizard Step 1: Select Service & Options */}
-          <div className="wizard-tab active" id="wTab1">
-            <h4 style={{marginBottom: '1rem'}}>Select Primary Service:</h4>
-            <div className="form-group">
-              <select id="modalServiceType" className="form-select">
-                <option value="wash-fold">Wash &amp; Fold (Everyday Laundry - $1.95/lb)</option>
-                <option value="dry-clean">Dry Cleaning (Formal wear &amp; Suits - from $7.50)</option>
-                <option value="iron-press">Launder &amp; Press (Shirts &amp; Pants - $3.25/item)</option>
-                <option value="bedding">Bedding &amp; Duvet Sanitization (from $18.00)</option>
-                <option value="combo">Complete Combo (Wash &amp; Fold + Dry Cleaning)</option>
-              </select>
+        ) : (
+          <div className="lce-modal-pickup-form">
+            <div className="lce-modal-header">
+              <h3>Schedule a Pickup</h3>
+              <p>Doorstep pickup &amp; delivery with guaranteed next-day turnaround.</p>
             </div>
-            <div className="form-group">
-              <label className="form-label">Estimated Number of Bags / Garments:</label>
-              <input type="number" id="modalEstimatedBags" className="form-input" min={1} max={20} defaultValue={1} />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Detergent &amp; Wash Preference:</label>
-              <select id="modalDetergentSelect" className="form-select">
-                <option value="Lavender Fresh">Lavender Fresh Essential Oil</option>
-                <option value="Hypoallergenic">Hypoallergenic (Sensitive Skin / Baby Safe)</option>
-                <option value="Fragrance-Free">100% Fragrance-Free</option>
-                <option value="Sport Active">Sport Active Odor Defense</option>
-              </select>
-            </div>
+
+            <form onSubmit={handleSubmit} className="lce-modal-form">
+              <div className="lce-form-row">
+                <div className="lce-form-group">
+                  <label>Full Name *</label>
+                  <input 
+                    type="text" 
+                    name="name" 
+                    placeholder="e.g. Jessica Miller" 
+                    required 
+                    value={formData.name} 
+                    onChange={handleChange} 
+                  />
+                </div>
+                <div className="lce-form-group">
+                  <label>Phone Number *</label>
+                  <input 
+                    type="tel" 
+                    name="phone" 
+                    placeholder="(555) 000-0000" 
+                    required 
+                    value={formData.phone} 
+                    onChange={handleChange} 
+                  />
+                </div>
+              </div>
+
+              <div className="lce-form-row">
+                <div className="lce-form-group">
+                  <label>Street Address *</label>
+                  <input 
+                    type="text" 
+                    name="address" 
+                    placeholder="123 Main St, Apt 4B" 
+                    required 
+                    value={formData.address} 
+                    onChange={handleChange} 
+                  />
+                </div>
+                <div className="lce-form-group zip-group">
+                  <label>Zip Code *</label>
+                  <input 
+                    type="text" 
+                    name="zip" 
+                    placeholder="94103" 
+                    maxLength={5} 
+                    required 
+                    value={formData.zip} 
+                    onChange={handleChange} 
+                  />
+                </div>
+              </div>
+
+              <div className="lce-form-row">
+                <div className="lce-form-group">
+                  <label>Primary Service</label>
+                  <select name="serviceType" value={formData.serviceType} onChange={handleChange}>
+                    <option value="wash-fold">Wash &amp; Fold Laundry</option>
+                    <option value="dry-cleaning">Dry Cleaning</option>
+                    <option value="commercial">Commercial Laundry</option>
+                    <option value="airbnb">Airbnb &amp; Vacation Rentals</option>
+                  </select>
+                </div>
+                <div className="lce-form-group">
+                  <label>Pickup Date</label>
+                  <input 
+                    type="date" 
+                    name="pickupDate" 
+                    required 
+                    value={formData.pickupDate} 
+                    onChange={handleChange} 
+                  />
+                </div>
+              </div>
+
+              <div className="lce-form-row">
+                <div className="lce-form-group">
+                  <label>Preferred Window</label>
+                  <select name="pickupTime" value={formData.pickupTime} onChange={handleChange}>
+                    <option value="morning">Morning (8:00 AM &ndash; 12:00 PM)</option>
+                    <option value="afternoon">Afternoon (1:00 PM &ndash; 5:00 PM)</option>
+                    <option value="evening">Evening (5:00 PM &ndash; 8:00 PM)</option>
+                  </select>
+                </div>
+                <div className="lce-form-group">
+                  <label>Promo Code</label>
+                  <input 
+                    type="text" 
+                    name="promoCode" 
+                    placeholder="e.g. FIRST20" 
+                    value={formData.promoCode} 
+                    onChange={handleChange} 
+                  />
+                </div>
+              </div>
+
+              <div className="lce-form-group">
+                <label>Special Instructions / Gate Code (Optional)</label>
+                <input 
+                  type="text" 
+                  name="notes" 
+                  placeholder="e.g. Leave bags on front porch, hypoallergenic detergent please" 
+                  value={formData.notes} 
+                  onChange={handleChange} 
+                />
+              </div>
+
+              <button type="submit" className="lce-btn-cyan full-width" disabled={isSubmitting}>
+                {isSubmitting ? 'Confirming Dispatch...' : 'CONFIRM & SCHEDULE PICKUP'}
+              </button>
+
+              <p className="lce-modal-secure-note">
+                🔒 Free cancellation anytime before driver dispatch. 100% Satisfaction Guarantee.
+              </p>
+            </form>
           </div>
-          {/* Wizard Step 2: Date & Time Window */}
-          <div className="wizard-tab" id="wTab2">
-            <h4 style={{marginBottom: '1rem'}}>Choose Pickup Window:</h4>
-            <div className="grid-2">
-              <div className="form-group">
-                <label className="form-label">Pickup Date:</label>
-                <input type="date" id="modalPickupDate" className="form-input" required />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Preferred Time Window:</label>
-                <select id="modalTimeSlot" className="form-select">
-                  <option value="Morning (8:00 AM - 10:00 AM)">Morning (8:00 AM - 10:00 AM)</option>
-                  <option value="Midday (11:00 AM - 1:00 PM)">Midday (11:00 AM - 1:00 PM)</option>
-                  <option value="Afternoon (2:00 PM - 4:00 PM)">Afternoon (2:00 PM - 4:00 PM)</option>
-                  <option value="Evening (5:00 PM - 7:00 PM)">Evening (5:00 PM - 7:00 PM)</option>
-                  <option value="Night Express (8:00 PM - 10:00 PM)">Night Express (8:00 PM - 10:00 PM)</option>
-                </select>
-              </div>
-            </div>
-            <div className="form-group">
-              <label className="form-label">Pickup Placement Instructions:</label>
-              <select id="modalPlacement" className="form-select">
-                <option value="Hand to Me in Person">Hand to Me in Person</option>
-                <option value="Leave at Front Door / Porch">Leave at Front Door / Porch (Contactless)</option>
-                <option value="Leave with Concierge / Doorman">Leave with Building Concierge / Doorman</option>
-                <option value="Back Porch / Gate Code">Back Porch / Side Gate</option>
-              </select>
-            </div>
-          </div>
-          {/* Wizard Step 3: Address & Contact Details */}
-          <div className="wizard-tab" id="wTab3">
-            <h4 style={{marginBottom: '1rem'}}>Your Contact &amp; Delivery Address:</h4>
-            <div className="grid-2">
-              <div className="form-group">
-                <label className="form-label">Full Name:</label>
-                <input type="text" id="modalFullName" className="form-input" placeholder="e.g. Alex Johnson" required />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Mobile Phone (for SMS updates):</label>
-                <input type="tel" id="modalPhone" className="form-input" placeholder="e.g. (555) 234-5678" required />
-              </div>
-            </div>
-            <div className="form-group">
-              <label className="form-label">Street Address:</label>
-              <input type="text" id="modalAddress" className="form-input" placeholder="e.g. 742 Evergreen Terrace, Apt 4B" required />
-            </div>
-            <div className="grid-2">
-              <div className="form-group">
-                <label className="form-label">City:</label>
-                <input type="text" id="modalCity" className="form-input" placeholder="e.g. New York / San Francisco" required />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Zip Code:</label>
-                <input type="text" id="modalZip" className="form-input" placeholder="e.g. 10001" required />
-              </div>
-            </div>
-          </div>
-          {/* Wizard Step 4: Review & Confirm */}
-          <div className="wizard-tab" id="wTab4">
-            <h4 style={{marginBottom: '1rem'}}>Order Review &amp; Confirmation:</h4>
-            <div style={{background: 'var(--bg-subtle)', padding: '1.2rem', borderRadius: 'var(--radius-md)', marginBottom: '1.2rem'}}>
-              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem'}}>
-                <span style={{fontWeight: 600}}>Service:</span>
-                <span id="reviewService">-</span>
-              </div>
-              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem'}}>
-                <span style={{fontWeight: 600}}>Pickup Window:</span>
-                <span id="reviewSchedule">-</span>
-              </div>
-              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem'}}>
-                <span style={{fontWeight: 600}}>Address:</span>
-                <span id="reviewAddress">-</span>
-              </div>
-              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem'}}>
-                <span style={{fontWeight: 600}}>Detergent Choice:</span>
-                <span id="reviewDetergent">-</span>
-              </div>
-              <div style={{display: 'flex', justifyContent: 'space-between', marginTop: '0.8rem', paddingTop: '0.6rem', borderTop: '1px solid var(--border-color)', fontWeight: 700}}>
-                <span>Estimated Cost:</span>
-                <span style={{color: 'var(--primary)', fontSize: '1.15rem'}} id="reviewEstPrice">$28.50 (Pay upon delivery)</span>
-              </div>
-            </div>
-            <div className="form-group">
-              <label className="form-label">Special Garment Notes or Gate Codes (Optional):</label>
-              <textarea id="modalSpecialNotes" className="form-textarea" rows={2} placeholder="e.g., Gate code is #4829, please wash silk shirts in cold water only." defaultValue={""} />
-            </div>
-          </div>
-        </div>
-        <div className="modal-footer">
-          <button className="btn btn-secondary" id="btnWizardPrev" style={{visibility: 'hidden'}} onClick={() => window.navigateWizard(-1)}>← Back</button>
-          <button className="btn btn-primary" id="btnWizardNext" onClick={() => window.navigateWizard(1)}>Next Step →</button>
-        </div>
+        )}
       </div>
     </div>
   );

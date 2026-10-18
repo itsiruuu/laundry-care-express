@@ -1,50 +1,85 @@
+import React, { useState } from 'react';
+
+const faqItems = [
+  {
+    question: "How does pickup and delivery work?",
+    answer: "Simply schedule a pickup online or via our mobile app, choose your preferred time window, and place your clothes in any bag (or your Laundry Care Express bag). Our driver will pick it up, transport it to our dedicated facility, and return it fresh, clean, and folded."
+  },
+  {
+    question: "Do I need to be home for pickup and delivery?",
+    answer: "No, you do not need to be home! You can leave your laundry bags on your porch, with your building concierge, or at a designated safe spot. Just add driver instructions when placing your order, and we will send photo confirmations upon pickup and drop-off."
+  },
+  {
+    question: "What is your typical turnaround time?",
+    answer: "Our standard turnaround time is next-day (within 24 to 48 hours). If you need your laundry back even faster, same-day express service is available in select areas."
+  },
+  {
+    question: "How do I separate my laundry?",
+    answer: "Please separate items that require Wash & Fold from items that need Dry Cleaning into distinct bags. For Wash & Fold, our specialists automatically sort your clothes by lights and darks and wash them according to manufacturer care labels."
+  },
+  {
+    question: "What happens if an item is damaged or missing?",
+    answer: "Every garment is tagged and tracked digitally throughout our process. In the rare event of an issue, our 100% Satisfaction Guarantee and garment reimbursement policy ensures your items are repaired, replaced, or credited promptly."
+  },
+  {
+    question: "What detergent and cleaning products do you use?",
+    answer: "We use premium eco-friendly, biodegradable detergents. We also proudly offer 100% hypoallergenic, fragrance-free Free & Clear options upon request at no extra charge."
+  }
+];
+
 export default function FAQ() {
+  const [openIndex, setOpenIndex] = useState(0);
+
+  const toggleItem = (idx) => {
+    setOpenIndex(prev => (prev === idx ? -1 : idx));
+  };
+
   return (
-    <section className="section section-subtle" id="faq">
-      <div className="container">
-        <div className="section-header">
-          <div className="badge badge-primary">Have Questions?</div>
-          <h2>Frequently Asked Questions</h2>
-          <p>Everything you need to know about our services, pickup hours, and special care handling.</p>
-        </div>
-        <div className="faq-list" id="faqAccordion">
-          <div className="faq-item open">
-            <button className="faq-question">
-              <span>Do I need to weigh or separate my clothes beforehand?</span>
-              <span className="faq-chevron">▼</span>
-            </button>
-            <div className="faq-answer">
-              No! You don't need to weigh or separate anything. Just place your garments into any disposable bag (or your Laundry Care Express bag). Our team sorts lights from darks, weighs the bags with calibrated legal-for-trade scales, and inspects all pockets.
-            </div>
-          </div>
-          <div className="faq-item">
-            <button className="faq-question">
-              <span>Do I have to be home for pickup and delivery?</span>
-              <span className="faq-chevron">▼</span>
-            </button>
-            <div className="faq-answer">
-              Not at all. You can select "Contactless Doorstep Pickup" and leave your bag by your front door, with your building concierge, or on your porch. Our driver takes a photo upon pickup and sends an instant SMS confirmation.
-            </div>
-          </div>
-          <div className="faq-item">
-            <button className="faq-question">
-              <span>What detergent do you use? Can I request hypoallergenic soap?</span>
-              <span className="faq-chevron">▼</span>
-            </button>
-            <div className="faq-answer">
-              We use premium eco-certified plant-based detergents. During scheduling, you can customize your preference to Hypoallergenic (great for eczema and babies), Lavender Meadow, or completely Fragrance-Free with zero additives.
-            </div>
-          </div>
-          <div className="faq-item">
-            <button className="faq-question">
-              <span>How fast will my clothes be delivered back?</span>
-              <span className="faq-chevron">▼</span>
-            </button>
-            <div className="faq-answer">
-              Our standard turnaround is 24 hours. For example, if we pick up Monday morning, your clothes will be returned fresh and folded on Tuesday. Same-day 8-hour rush delivery is also available for urgent orders.
-            </div>
+    <section className="lce-faq-section" id="faqs">
+      <div className="lce-container lce-faq-grid">
+        
+        {/* Left Column: Heading */}
+        <div className="lce-faq-intro">
+          <h2 className="lce-faq-title">
+            Frequently Asked<br />Questions
+          </h2>
+          <p className="lce-faq-desc">
+            Have questions about how our service works? Find answers to our most common questions here, or contact our customer support team 7 days a week.
+          </p>
+          <div className="lce-faq-support-box">
+            <span className="support-badge">&#128172; Need assistance?</span>
+            <p>Our friendly care team is ready to assist you anytime.</p>
+            <a href="tel:8005550199" className="lce-faq-phone-link">Call (800) 555-0199</a>
           </div>
         </div>
+
+        {/* Right Column: Interactive Accordion */}
+        <div className="lce-faq-list">
+          {faqItems.map((item, idx) => {
+            const isOpen = openIndex === idx;
+            return (
+              <div 
+                key={idx} 
+                className={`lce-faq-item ${isOpen ? 'active' : ''}`}
+              >
+                <button 
+                  className="lce-faq-question-btn" 
+                  onClick={() => toggleItem(idx)}
+                  aria-expanded={isOpen}
+                >
+                  <span className="question-text">{item.question}</span>
+                  <span className="toggle-icon">{isOpen ? '−' : '+'}</span>
+                </button>
+                {isOpen && (
+                  <div className="lce-faq-answer">
+                    <p>{item.answer}</p>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
       </div>
     </section>
   );

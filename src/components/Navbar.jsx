@@ -1,55 +1,76 @@
-export default function Navbar() {
+import React, { useState } from 'react';
+
+export default function Navbar({ onOpenBooking }) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(prev => !prev);
+  };
+
+  const closeMenu = () => {
+    setMobileMenuOpen(false);
+  };
+
   return (
-    <nav className="navbar" id="mainNavbar">
-      <div className="container nav-container">
-        <a href="#hero" className="brand-logo" id="brandLogo">
-          <div className="brand-icon">
-            {/* Sparkle & Water droplet SVG */}
-            <svg width={24} height={24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
-              <path d="M12 9v4" />
-              <path d="M10 11h4" />
+    <nav className="lce-navbar" id="topNavbar">
+      <div className="lce-nav-container">
+        {/* Brand Logo */}
+        <a href="#top" className="lce-brand-logo" onClick={closeMenu}>
+          <div className="lce-logo-symbol">
+            <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M20 4C14 14 8 20 8 27C8 33.6 13.4 39 20 39C26.6 39 32 33.6 32 27C32 20 26 14 20 4Z" fill="url(#dropGrad)" />
+              <path d="M15 26C15 22 18 19 21 17C20 21 22 23 23 26C24 29 22 32 19 32C16.8 32 15 29.5 15 26Z" fill="#FFFFFF" fillOpacity="0.8" />
+              <defs>
+                <linearGradient id="dropGrad" x1="8" y1="4" x2="32" y2="39" gradientUnits="userSpaceOnUse">
+                  <stop stopColor="#00C4FF" />
+                  <stop offset="1" stopColor="#0077CC" />
+                </linearGradient>
+              </defs>
             </svg>
           </div>
-          <div className="brand-name">Laundry Care <span>Express</span></div>
+          <div className="lce-brand-text">
+            <span className="lce-brand-main">Laundry Care</span>
+            <span className="lce-brand-sub">EXPRESS</span>
+          </div>
         </a>
-        <ul className="nav-links" id="navLinksList">
-          <li><a href="#services" className="nav-link">Services</a></li>
-          <li><a href="#calculator" className="nav-link">Pricing Calculator</a></li>
-          <li><a href="#how-it-works" className="nav-link">How It Works</a></li>
-          <li><a href="#tracker" className="nav-link">Live Tracker</a></li>
-          <li><a href="#reviews" className="nav-link">Reviews</a></li>
-          <li><a href="#faq" className="nav-link">FAQ</a></li>
+
+        {/* Desktop Navigation Links */}
+        <ul className={`lce-nav-links ${mobileMenuOpen ? 'open' : ''}`}>
+          <li><a href="#services" onClick={closeMenu}>PRICING &amp; SERVICES</a></li>
+          <li><a href="#how-it-works" onClick={closeMenu}>HOW IT WORKS</a></li>
+          <li><a href="#faqs" onClick={closeMenu}>FAQS</a></li>
+          <li><a href="#reviews" onClick={closeMenu}>REVIEWS</a></li>
+          <li><a href="#locations" onClick={closeMenu}>LOCATIONS</a></li>
+          <li><a href="#blog" onClick={closeMenu}>BLOG</a></li>
+          
+          {/* Mobile only action inside drawer */}
+          <li className="mobile-only-action">
+            <button className="lce-nav-login-btn" onClick={() => { closeMenu(); onOpenBooking?.('login'); }}>
+              LOG IN
+            </button>
+          </li>
+          <li className="mobile-only-action">
+            <button className="lce-nav-pickup-btn" onClick={() => { closeMenu(); onOpenBooking?.(); }}>
+              SCHEDULE A PICKUP
+            </button>
+          </li>
         </ul>
-        <div className="nav-actions">
-          {/* Dark / Light Theme Toggle */}
-          <button className="theme-toggle-btn" id="themeToggleBtn" aria-label="Toggle Dark/Light Mode" title="Toggle Theme">
-            <svg id="themeIconSun" width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{display: 'none'}}>
-              <circle cx={12} cy={12} r={5} />
-              <line x1={12} y1={1} x2={12} y2={3} />
-              <line x1={12} y1={21} x2={12} y2={23} />
-              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-              <line x1={1} y1={12} x2={3} y2={12} />
-              <line x1={21} y1={12} x2={23} y2={12} />
-              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-            </svg>
-            <svg id="themeIconMoon" width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-            </svg>
+
+        {/* Desktop Right CTA Buttons */}
+        <div className="lce-nav-actions">
+          <button className="lce-nav-login-btn" onClick={() => onOpenBooking?.('login')}>
+            LOG IN
           </button>
-          <button className="btn btn-primary" id="btnOpenBookingNav">
-            <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x={3} y={4} width={18} height={18} rx={2} ry={2} />
-              <line x1={16} y1={2} x2={16} y2={6} />
-              <line x1={8} y1={2} x2={8} y2={6} />
-              <line x1={3} y1={10} x2={21} y2={10} />
-            </svg>
-            Schedule Pickup
+          <button className="lce-nav-pickup-btn" onClick={() => onOpenBooking?.()}>
+            SCHEDULE A PICKUP
           </button>
-          <button className="mobile-menu-btn" id="mobileMenuToggle" aria-label="Open Navigation Menu">
-            ☰
+          <button 
+            className="lce-mobile-toggle" 
+            onClick={toggleMobileMenu} 
+            aria-label="Toggle navigation menu"
+            aria-expanded={mobileMenuOpen}
+          >
+            {mobileMenuOpen ? '✕' : '☰'}
           </button>
         </div>
       </div>
